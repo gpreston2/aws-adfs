@@ -2,7 +2,7 @@
 [![PyPI version](https://badge.fury.io/py/aws-adfs.svg)](https://badge.fury.io/py/aws-adfs)
 [![Travis build](https://api.travis-ci.org/venth/aws-adfs.svg?branch=master)](https://api.travis-ci.org/venth/aws-adfs.svg?branch=master)
 
-Command line tool to easier aws cli authentication against ADFS (multi factor authentication with active directory).
+Command line tool to easier aws cli authentication against ADFS (multi factor authentication with active directory). This is a fork of aws-adfs originally made by [Venth](https://github.com/venth) in [this repository](https://github.com/venth/aws-adfs) and uploaded to PyPI for ease of installation.
 
 Thanks to [Brandond](https://github.com/brandond) contribution - "Remove storage of credentials, in favor of storing ADFS session cookies"
 aws-adfs:
@@ -34,7 +34,7 @@ aws-adfs integrates with:
 * user local installation
 
     ```
-    pip install aws-adfs
+    pip install aws-adfs-ebsco
     ```
 
     Please note, that you need to add $HOME/.local/bin to your PATH
@@ -42,15 +42,15 @@ aws-adfs integrates with:
 * system wide installation
 
     ```
-    sudo pip install aws-adfs
+    sudo pip install aws-adfs-ebsco
     ```
 
 * virtualenvs
 
     ```
-    virtualenv -p /usr/bin/python2.7 aws-adfs
-    source aws-adfs/bin/activate
-    pip install aws-adfs
+    virtualenv -p /usr/bin/python2.7 aws-adfs-ebsco
+    source aws-adfs-ebsco/bin/activate
+    pip install aws-adfs-ebsco
     ...
     ...
     deactivate
@@ -111,9 +111,9 @@ aws-adfs integrates with:
     ```
     $ aws-adfs login --help
     Usage: aws-adfs login [OPTIONS]
-    
+
       Authenticates an user with active directory credentials
-    
+
     Options:
       --profile TEXT                  AWS cli profile that will be authenticated.
                                       After successful authentication just use:
@@ -156,7 +156,7 @@ aws-adfs integrates with:
 # Known issues
 * duo-security
     * Error: Cannot begin authentication process. The error response: {"message": "Unknown authentication method.", "stat": "FAIL"}
-    
+
         Please setup preferred auth method in duo-sercurity settings (settings' -> 'My Settings & Devices').
 * in cases of trouble with lxml please install
 

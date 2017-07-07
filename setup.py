@@ -35,7 +35,7 @@ if system() == 'Windows':
     install_requires.append('requests-negotiate-sspi')
 
 setup(
-    name='aws-adfs',
+    name='aws-adfs-ebsco',
     version=version,
     description='AWS Cli authenticator via ADFS - small command-line tool '
                 'to authenticate via ADFS and assume chosen role',
@@ -44,8 +44,7 @@ setup(
         mode='r',
         encoding='utf-8'
     ).read(),
-    url='https://github.com/venth/aws-adfs',
-    download_url='https://github.com/venth/aws-adfs/tarball/{}'.format(version),
+    url='https://github.com/gpreston2/aws-adfs',
     author='Venth',
     author_email='artur.krysiak.warszawa@gmail.com',
     maintainer='Venth',
