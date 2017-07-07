@@ -79,7 +79,7 @@ def login(
     _verification_checks(config)
 
     # Try reauthenticating using an existing ADFS session
-    principal_roles, assertion, aws_session_duration = authenticator.authenticate(config)
+    principal_roles, assertion, aws_session_duration, aws_role_names = authenticator.authenticate(config)
 
     # If we fail to get an assertion, prompt for credentials and try again
     if assertion is None:
@@ -88,14 +88,14 @@ def login(
         else:
             username, password = _get_user_credentials(config)
 
-        principal_roles, assertion, aws_session_duration = authenticator.authenticate(config, username, password)
+        principal_roles, assertion, aws_session_duration, aws_role_names = authenticator.authenticate(config, username, password)
 
         username = '########################################'
         del username
         password = '########################################'
         del password
 
-    principal_arn, config.role_arn = _chosen_role_to_assume(config, principal_roles)
+    principal_arn, config.role_arn = _chosen_role_to_assume(config, principal_roles, aws_role_names)
 
     # Use the assertion to get an AWS STS token using Assume Role with SAML
     # according to the documentation:
@@ -218,7 +218,7 @@ def _verification_checks(config):
         exit(-1)
 
 
-def _chosen_role_to_assume(config, principal_roles):
+def _chosen_role_to_assume(config, principal_roles, aws_role_names):
     if not principal_roles or len(principal_roles) == 0:
         click.echo('This account does not have access to any roles', err=True)
         exit(-1)
@@ -238,7 +238,7 @@ def _chosen_role_to_assume(config, principal_roles):
         i = 0
         for (principal_arn, role_arn) in principal_roles:
             role_name = role_arn.split(':role/')[1]
-            click.echo('    [ {} -> {} ]: {}'.format(role_name.ljust(30, ' ' if i % 2 == 0 else '.'), i, role_arn))
+            click.echo('    [ {} -> {} ]: {}'.format(role_name.ljust(30, ' ' if i % 2 == 0 else '.'), i, aws_role_names[i]))
             i += 1
 
         selected_index = click.prompt(text='Selection', type=click.IntRange(0, len(principal_roles)))

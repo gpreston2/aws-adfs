@@ -34,6 +34,12 @@ def extract(html):
     )
     aws_roles = [element.text.split(',') for element in raw_roles]
 
+	# Find all role names
+    raw_role_names = saml.findall(
+        './/{*}Attribute[@Name="http://temp/variable"]/{*}AttributeValue'
+    )
+    aws_role_names = [element.text.split(',')[0] for element in raw_role_names]
+
     # Note the format of the attribute value is provider_arn, role_arn
     principal_roles = [role for role in aws_roles if ':saml-provider/' in role[0]]
 
@@ -44,4 +50,4 @@ def extract(html):
     ):
         aws_session_duration = int(element.text)
 
-    return principal_roles, assertion, aws_session_duration
+    return principal_roles, assertion, aws_session_duration, aws_role_names
