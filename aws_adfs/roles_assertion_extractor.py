@@ -2,7 +2,6 @@ import base64
 import click
 import lxml.etree as ET
 
-
 default_session_duration = 3600
 
 
@@ -34,7 +33,7 @@ def extract(html):
     )
     aws_roles = [element.text.split(',') for element in raw_roles]
 
-	# Find all role names
+    # Find all role names
     raw_role_names = saml.findall(
         './/{*}Attribute[@Name="http://temp/variable"]/{*}AttributeValue'
     )
