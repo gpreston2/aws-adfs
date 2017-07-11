@@ -77,7 +77,7 @@ def extract(html_response, ssl_verification_enabled, session):
             '{}:{}'.format(auth_signature, _app(duo_request_signature)),
         )
 
-    return None, None, None
+    return None, None, None, None
 
 
 def _context(html_response):
