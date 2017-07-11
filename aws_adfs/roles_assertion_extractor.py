@@ -22,7 +22,7 @@ def extract(html):
     # If we did not get an error, but also do not have an assertion,
     # then the user needs to authenticate
     if not assertion:
-        return None, None, None
+        return None, None, None, None
 
     # Parse the returned assertion and extract the authorized roles
     saml = ET.fromstring(base64.b64decode(assertion))
