@@ -61,7 +61,7 @@ aws-adfs integrates with:
 * login to your adfs host with disabled ssl verification on aws cli profile: adfs
 
     ```
-    aws-adfs login --adfs-host=your-adfs-hostname --no-ssl-verification
+    aws-adfs-ebsco login --adfs-host=your-adfs-hostname --no-ssl-verification
     ```
 
     and verification
@@ -73,7 +73,7 @@ aws-adfs integrates with:
 * login to your adfs host with disabled ssl verification on specified aws cli profile: specified-profile
 
     ```
-    aws-adfs login --profile=specified-profile --adfs-host=your-adfs-hostname --no-ssl-verification
+    aws-adfs-ebsco login --profile=specified-profile --adfs-host=your-adfs-hostname --no-ssl-verification
     ```
 
     and verification
@@ -84,7 +84,7 @@ aws-adfs integrates with:
 
 * help, help, help?
     ```
-    $ aws-adfs --help
+    $ aws-adfs-ebsco --help
     Usage: aws-adfs [OPTIONS] COMMAND [ARGS]...
 
     Options:
@@ -98,7 +98,7 @@ aws-adfs integrates with:
     ```
 
     ```
-    $ aws-adfs list --help
+    $ aws-adfs-ebsco list --help
     Usage: aws-adfs list [OPTIONS]
 
       lists available profiles
@@ -109,7 +109,7 @@ aws-adfs integrates with:
     ```
 
     ```
-    $ aws-adfs login --help
+    $ aws-adfs-ebsco login --help
     Usage: aws-adfs login [OPTIONS]
 
       Authenticates an user with active directory credentials
@@ -143,7 +143,7 @@ aws-adfs integrates with:
       --help                          Show this message and exit.
     ```
     ```
-    $ aws-adfs reset --help                                                                                                                                              13:39
+    $ aws-adfs-ebsco reset --help                                                                                                                                              13:39
     Usage: aws-adfs reset [OPTIONS]
 
       removes stored profile
