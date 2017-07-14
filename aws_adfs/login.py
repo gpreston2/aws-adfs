@@ -95,7 +95,7 @@ def login(
         password = '########################################'
         del password
 
-    principal_arn, config.role_arn = role_chooser.choose_role_to_assume(config, principal_roles)
+    principal_arn, config.role_arn = role_chooser.choose_role_to_assume(config, principal_roles, aws_role_names)
     if principal_arn is None or config.role_arn is None:
         click.echo('This account does not have access to any roles', err=True)
         exit(-1)
