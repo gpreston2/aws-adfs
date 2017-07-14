@@ -7,7 +7,7 @@ from botocore import client
 
 from . import authenticator
 from . import prepare
-from .prepare import adfs_config
+from . import role_chooser
 
 
 @click.command()
@@ -95,7 +95,10 @@ def login(
         password = '########################################'
         del password
 
-    principal_arn, config.role_arn = _chosen_role_to_assume(config, principal_roles, aws_role_names)
+    principal_arn, config.role_arn = role_chooser.choose_role_to_assume(config, principal_roles)
+    if principal_arn is None or config.role_arn is None:
+        click.echo('This account does not have access to any roles', err=True)
+        exit(-1)
 
     # Use the assertion to get an AWS STS token using Assume Role with SAML
     # according to the documentation:
@@ -163,6 +166,7 @@ def _get_user_credentials(config):
 
     return config.adfs_user, password
 
+
 def _stdin_user_credentials():
     stdin = click.get_text_stream('stdin').read()
     stdin_lines = stdin.strip().splitlines()
@@ -170,8 +174,9 @@ def _stdin_user_credentials():
         username, password = stdin_lines[:2]
     except ValueError:
         raise click.ClickException("Failed to read newline separated "
-                "username and password from stdin.")
+                                   "username and password from stdin.")
     return username, password
+
 
 def _store(config, aws_session_token):
     def store_config(profile, config_location, storer):
