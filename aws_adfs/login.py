@@ -3,11 +3,73 @@ import configparser
 import boto3
 import botocore
 import click
+import time
 from botocore import client
+from threading import Thread
 
 from . import authenticator
 from . import prepare
 from . import role_chooser
+
+
+class UpdateToken(Thread):
+
+    def __init__(self, timeout, config, principal_arn, assertion):
+        self.timeout = timeout
+        self.config = config
+        self.principal_arn = principal_arn
+        self.assertion = assertion
+        Thread.__init__(self)
+
+    def run(self):
+        for _ in range(self.timeout):
+            conn = boto3.client('sts', config=client.Config(signature_version=botocore.UNSIGNED))
+            aws_session_token = conn.assume_role_with_saml(
+                RoleArn=self.config.role_arn,
+                PrincipalArn=self.principal_arn,
+                SAMLAssertion=self.assertion,
+                DurationSeconds=3600,
+            )
+            self._store(self.config, aws_session_token)
+
+
+    def _store(self, config, aws_session_token):
+        def store_config(profile, config_location, storer):
+            config_file = configparser.RawConfigParser()
+            config_file.read(config_location)
+
+            if not config_file.has_section(profile):
+                config_file.add_section(profile)
+
+            storer(config_file, profile)
+
+            with open(config_location, 'w+') as f:
+                try:
+                    config_file.write(f)
+                finally:
+                    f.close()
+
+        def credentials_storer(config_file, profile):
+            config_file.set(profile, 'aws_access_key_id', aws_session_token['Credentials']['AccessKeyId'])
+            config_file.set(profile, 'aws_secret_access_key', aws_session_token['Credentials']['SecretAccessKey'])
+            config_file.set(profile, 'aws_session_token', aws_session_token['Credentials']['SessionToken'])
+            config_file.set(profile, 'aws_security_token', aws_session_token['Credentials']['SessionToken'])
+
+        def config_storer(config_file, profile):
+            config_file.set(profile, 'region', config.region)
+            config_file.set(profile, 'output', config.output_format)
+            config_file.set(profile, 'adfs_config.ssl_verification', config.ssl_verification)
+            config_file.set(profile, 'adfs_config.role_arn', config.role_arn)
+            config_file.set(profile, 'adfs_config.adfs_host', config.adfs_host)
+            config_file.set(profile, 'adfs_config.adfs_user', config.adfs_user)
+            if config.s3_signature_version:
+                config_file.set(profile, 's3', '\nsignature_version = {}'.format(config.s3_signature_version))
+
+        store_config(config.profile, config.aws_credentials_location, credentials_storer)
+        if config.profile == 'default':
+            store_config(config.profile, config.aws_config_location, config_storer)
+        else:
+            store_config('profile {}'.format(config.profile), config.aws_config_location, config_storer)
 
 
 @click.command()
@@ -53,6 +115,11 @@ from . import role_chooser
     is_flag=True,
     help='Read username, password from standard input separated by a newline.',
 )
+@click.option(
+    '--timeout',
+    default=1,
+    help='Set the session duration in hours. Default is 1 hour.'
+)
 def login(
         profile,
         region,
@@ -62,6 +129,7 @@ def login(
         provider_id,
         s3_signature_version,
         stdin,
+        timeout,
 ):
     """
     Authenticates an user with active directory credentials
@@ -121,15 +189,9 @@ def login(
     # Note, too, that if a SessionNotOnOrAfter attribute is also defined,
     # then the lesser value of the two attributes, SessionDuration or SessionNotOnOrAfter,
     # establishes the maximum duration of the console session.
-    conn = boto3.client('sts', config=client.Config(signature_version=botocore.UNSIGNED))
-    aws_session_token = conn.assume_role_with_saml(
-        RoleArn=config.role_arn,
-        PrincipalArn=principal_arn,
-        SAMLAssertion=assertion,
-        DurationSeconds=3600,
-    )
+    token_thread = UpdateToken(timeout, config, principal_arn, assertion)
+    token_thread.start()
 
-    _store(config, aws_session_token)
     _emit_summary(config, aws_session_duration)
 
 
@@ -176,45 +238,6 @@ def _stdin_user_credentials():
         raise click.ClickException("Failed to read newline separated "
                                    "username and password from stdin.")
     return username, password
-
-
-def _store(config, aws_session_token):
-    def store_config(profile, config_location, storer):
-        config_file = configparser.RawConfigParser()
-        config_file.read(config_location)
-
-        if not config_file.has_section(profile):
-            config_file.add_section(profile)
-
-        storer(config_file, profile)
-
-        with open(config_location, 'w+') as f:
-            try:
-                config_file.write(f)
-            finally:
-                f.close()
-
-    def credentials_storer(config_file, profile):
-        config_file.set(profile, 'aws_access_key_id', aws_session_token['Credentials']['AccessKeyId'])
-        config_file.set(profile, 'aws_secret_access_key', aws_session_token['Credentials']['SecretAccessKey'])
-        config_file.set(profile, 'aws_session_token', aws_session_token['Credentials']['SessionToken'])
-        config_file.set(profile, 'aws_security_token', aws_session_token['Credentials']['SessionToken'])
-
-    def config_storer(config_file, profile):
-        config_file.set(profile, 'region', config.region)
-        config_file.set(profile, 'output', config.output_format)
-        config_file.set(profile, 'adfs_config.ssl_verification', config.ssl_verification)
-        config_file.set(profile, 'adfs_config.role_arn', config.role_arn)
-        config_file.set(profile, 'adfs_config.adfs_host', config.adfs_host)
-        config_file.set(profile, 'adfs_config.adfs_user', config.adfs_user)
-        if config.s3_signature_version:
-            config_file.set(profile, 's3', '\nsignature_version = {}'.format(config.s3_signature_version))
-
-    store_config(config.profile, config.aws_credentials_location, credentials_storer)
-    if config.profile == 'default':
-        store_config(config.profile, config.aws_config_location, config_storer)
-    else:
-        store_config('profile {}'.format(config.profile), config.aws_config_location, config_storer)
 
 
 def _verification_checks(config):
