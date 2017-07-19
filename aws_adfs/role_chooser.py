@@ -2,7 +2,7 @@ import click
 import collections
 
 
-def choose_role_to_assume(config, principal_roles):
+def choose_role_to_assume(config, principal_roles, aws_role_names):
     chosen_principal_arn = None
     chosen_role_arn = None
 
@@ -35,7 +35,7 @@ def choose_role_to_assume(config, principal_roles):
             click.echo('{}:'.format(account_name))
             for role_arn in roles.keys():
                 role_entry = roles[role_arn]
-                click.echo('    [ {} -> {} ]: {}'.format(role_entry['name'].ljust(30, ' ' if i % 2 == 0 else '.'), i, role_arn))
+                click.echo('    [ {} -> {} ]: {}'.format(role_entry['name'].ljust(30, ' ' if i % 2 == 0 else '.'), i, aws_role_names[i]))
                 i += 1
 
         selected_index = click.prompt(text='Selection', type=click.IntRange(0, len(role_collection)))

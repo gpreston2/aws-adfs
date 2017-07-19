@@ -25,7 +25,7 @@ def authenticate(config, username=None, password=None):
     if response.status_code == 200:
         extract_strategy = _strategy(response, config, session)
 
-        principal_roles, assertion, aws_session_duration = extract_strategy()
+        principal_roles, assertion, aws_session_duration, aws_role_names = extract_strategy()
 
         if assertion is None:
             logging.error(u'Cannot extract saml assertion. Second factor authentication failed?')
@@ -40,7 +40,7 @@ def authenticate(config, username=None, password=None):
     else:
         logging.error(u'Cannot extract roles from response')
 
-    return aggregated_principal_roles, assertion, aws_session_duration
+    return aggregated_principal_roles, assertion, aws_session_duration, aws_role_names
 
 
 def _aggregate_roles_by_account_alias(session,
