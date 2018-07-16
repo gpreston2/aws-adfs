@@ -2,6 +2,8 @@
 [![PyPI version](https://badge.fury.io/py/aws-adfs-ebsco.svg)](https://badge.fury.io/py/aws-adfs-ebsco)
 [![Travis build](https://api.travis-ci.org/venth/aws-adfs.svg?branch=master)](https://api.travis-ci.org/venth/aws-adfs.svg?branch=master)
 
+**NOTE: Not up to date. Use [the original version by Venth](https://github.com/venth/aws-adfs) instead.**
+
 Command line tool to easier aws cli authentication against ADFS (multi factor authentication with active directory). This is a fork of aws-adfs originally made by [Venth](https://github.com/venth) in [this repository](https://github.com/venth/aws-adfs) and uploaded to PyPI for ease of installation.
 
 Thanks to [Brandond](https://github.com/brandond) contribution - "Remove storage of credentials, in favor of storing ADFS session cookies"
